@@ -1,0 +1,125 @@
+title: Home
+views:
+  - title: Home
+    path: home
+    icon: mdi:home
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Overview
+            icon: mdi:home
+          - type: tile
+            entity: person.owner
+          - type: tile
+            entity: sensor.phone_battery_level
+            name: Phone battery
+          - type: weather-forecast
+            entity: weather.forecast_home
+            show_current: true
+            show_forecast: true
+            forecast_type: daily
+            grid_options:
+              columns: full
+      - type: grid
+        cards:
+          - type: heading
+            heading: Living room
+            icon: mdi:sofa
+          - type: tile
+            entity: light.kori_lamppu
+            name: Kori lamppu
+            features:
+              - type: light-brightness
+          - type: tile
+            entity: media_player.living_room_tv
+            name: TV
+            features:
+              - type: media-player-volume-slider
+          - type: tile
+            entity: sensor.living_room_tv_power
+            name: TV power
+          - type: tile
+            entity: sensor.living_room_tv_energy
+            name: TV energy
+      - type: grid
+        cards:
+          - type: heading
+            heading: Vacuum (Q5 Pro)
+            icon: mdi:robot-vacuum
+          - type: tile
+            entity: vacuum.q5_pro
+            grid_options:
+              columns: full
+            features:
+              - type: vacuum-commands
+                commands: [start_pause, stop, return_home, locate]
+          - type: tile
+            entity: sensor.q5_pro_battery
+          - type: tile
+            entity: switch.q5_pro_do_not_disturb
+          - type: tile
+            entity: sensor.q5_pro_filter_time_left
+          - type: tile
+            entity: sensor.q5_pro_main_brush_time_left
+          - type: tile
+            entity: sensor.q5_pro_side_brush_time_left
+          - type: tile
+            entity: sensor.q5_pro_sensor_time_left
+          - type: tile
+            entity: sensor.q5_pro_last_clean_end
+            grid_options:
+              columns: full
+          - type: picture-entity
+            entity: image.q5_pro_map_0
+            show_name: false
+            show_state: false
+            grid_options:
+              columns: full
+      - type: grid
+        cards:
+          - type: heading
+            heading: Lists
+            icon: mdi:format-list-checks
+          - type: todo-list
+            entity: todo.shopping_list
+          - type: todo-list
+            entity: todo.todo
+      - type: grid
+        cards:
+          - type: heading
+            heading: Phone (phone)
+            icon: mdi:cellphone
+          - type: tile
+            entity: sensor.phone_battery_state
+          - type: tile
+            entity: sensor.phone_next_alarm
+          - type: tile
+            entity: sensor.phone_detected_activity
+          - type: tile
+            entity: sensor.phone_geocoded_location
+      - type: grid
+        cards:
+          - type: heading
+            heading: System
+            icon: mdi:server
+          - type: tile
+            entity: sensor.backup_last_successful_automatic_backup
+          - type: tile
+            entity: sensor.backup_next_scheduled_automatic_backup
+          - type: tile
+            entity: sensor.backup_backup_manager_state
+          - type: tile
+            entity: sensor.sun_next_rising
+          - type: tile
+            entity: sensor.sun_next_setting
+  - title: Map
+    path: map
+    icon: mdi:map
+    type: panel
+    cards:
+      - type: map
+        auto_fit: true
+        show_all: true

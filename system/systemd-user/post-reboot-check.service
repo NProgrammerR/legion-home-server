@@ -1,0 +1,10 @@
+[Unit]
+Description=One-shot health check + phone notification after a reboot
+
+[Service]
+Type=oneshot
+ExecStart=/home/legion/scripts/post-reboot-check.sh
+TimeoutStartSec=20min
+
+[Install]
+WantedBy=default.target

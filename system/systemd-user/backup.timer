@@ -1,0 +1,10 @@
+[Unit]
+Description=Run restic backup nightly at 03:00 (after Immich's 02:00 DB dump)
+
+[Timer]
+OnCalendar=*-*-* 03:00:00
+Persistent=true
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target

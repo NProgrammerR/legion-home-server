@@ -1,0 +1,6 @@
+[Unit]
+Description=Notify phone via Home Assistant that %i failed
+
+[Service]
+Type=oneshot
+ExecStart=/home/legion/backup/notify-failure.sh %i

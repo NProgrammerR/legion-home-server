@@ -1,0 +1,9 @@
+[Unit]
+Description=Nightly restic backup to /mnt/backup
+OnFailure=backup-failure-notify@%n.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/legion/backup/run-backup.sh
+Nice=10
+IOSchedulingClass=idle

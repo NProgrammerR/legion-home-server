@@ -1,0 +1,9 @@
+# Never commit secrets or data
+*.env
+!example.env
+secrets.yaml
+.storage/
+restic-password
+*.db
+*.log
+*.bak*

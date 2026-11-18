@@ -1,0 +1,135 @@
+- id: '1792226607540'
+  alias: Vaccum
+  description: ''
+  triggers:
+  - trigger: time
+    at: '12:00:00'
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+    - sat
+    - sun
+  conditions:
+  - condition: zone.not_in_zone
+    target:
+      entity_id:
+      - person.owner
+    options:
+      behavior: any
+      for:
+        hours: 0
+        minutes: 30
+        seconds: 0
+      zone: zone.home
+  actions:
+  - action: vacuum.start
+    metadata: {}
+    data: {}
+    target:
+      entity_id: vacuum.q5_pro
+  - action: notify.send_message
+    metadata: {}
+    target:
+      device_id: 43ef60332863e15b87646a89e4b313db
+    data:
+      message: Cleaning
+  mode: single
+- id: '1792227007709'
+  alias: New automation
+  description: ''
+  triggers:
+  - trigger: zone.entered
+    target:
+      entity_id: person.owner
+    options:
+      behavior: each
+      for: 00:00:00
+      zone: zone.home
+  conditions: []
+  actions:
+  - action: notify.send_message
+    metadata: {}
+    target:
+      device_id: 43ef60332863e15b87646a89e4b313db
+    data:
+      message: 'Is Home '
+  mode: single
+- id: '1792227530113'
+  alias: Left home
+  description: ''
+  triggers:
+  - trigger: zone.left
+    target:
+      entity_id: person.owner
+    options:
+      behavior: each
+      for: 00:00:00
+      zone: zone.home
+  conditions: []
+  actions:
+  - action: notify.send_message
+    metadata: {}
+    target:
+      device_id: 43ef60332863e15b87646a89e4b313db
+    data:
+      message: Left home
+  mode: single
+- id: samsungtv_turn_on_wol
+  alias: Samsung TV turn on (Wake-on-LAN)
+  description: Lets HA power on the Samsung TV via magic packet
+  triggers:
+  - trigger: device
+    domain: samsungtv
+    type: samsungtv.turn_on
+    device_id: 55edeba828f1cd2b57b00135e167d737
+  conditions: []
+  actions:
+  - action: wake_on_lan.send_magic_packet
+    data:
+      mac: 00:00:00:00:00:00
+      broadcast_address: 192.168.1.X
+  mode: single
+- id: kori_lamppu_wake_up_light
+  alias: Kori lamppu wake-up light
+  description: Gradually brightens Kori lamppu over 30 min before the phone alarm
+  triggers:
+  - trigger: time
+    at:
+      entity_id: sensor.phone_next_alarm
+      offset: -00:30:00
+  conditions:
+  - condition: state
+    entity_id: person.owner
+    state: home
+  - condition: time
+    after: 03:00:00
+    before: '11:00:00'
+  - condition: state
+    entity_id: sensor.phone_next_alarm
+    attribute: Package
+    state: com.sec.android.app.clockpackage
+  - condition: state
+    entity_id: light.kori_lamppu
+    state: 'off'
+  actions:
+  - repeat:
+      sequence:
+      - action: light.turn_on
+        target:
+          entity_id: light.kori_lamppu
+        data:
+          brightness_pct: '{{ [ (repeat.index * 100 / 30) | round | int, 1 ] | max }}'
+          transition: 55
+      - delay: 00:01:00
+      until:
+      - condition: or
+        conditions:
+        - condition: template
+          value_template: '{{ repeat.index >= 30 }}'
+        - condition: state
+          entity_id: light.kori_lamppu
+          state: 'off'
+  mode: single

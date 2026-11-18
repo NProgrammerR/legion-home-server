@@ -1,0 +1,14 @@
+title: Legion
+theme: dark
+color: slate
+headerStyle: clean
+layout:
+  Smart Home:
+    style: row
+    columns: 3
+  Media & Files:
+    style: row
+    columns: 3
+  AI & Voice:
+    style: row
+    columns: 3

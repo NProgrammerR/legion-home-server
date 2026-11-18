@@ -1,0 +1,55 @@
+- Smart Home:
+    - Home Assistant:
+        icon: home-assistant.png
+        href: http://192.168.1.X:8123
+        description: Home automation
+        siteMonitor: http://192.168.1.X:8123
+        server: local
+        container: homeassistant
+    - Matter Server:
+        icon: matter.png
+        href: http://192.168.1.X:5580
+        description: Matter controller
+        server: local
+        container: matter-server
+
+- Media & Files:
+    - Immich:
+        icon: immich.png
+        href: http://192.168.1.X:2283
+        description: Photos
+        siteMonitor: http://192.168.1.X:2283
+        server: local
+        container: immich_server
+    - Syncthing:
+        icon: syncthing.png
+        href: http://192.168.1.X:8384
+        description: File sync
+        siteMonitor: http://192.168.1.X:8384
+        server: local
+        container: syncthing
+
+- AI & Voice:
+    - Ollama:
+        icon: ollama.png
+        href: http://192.168.1.X:11434
+        description: Local LLMs
+        siteMonitor: http://192.168.1.X:11434
+    - Whisper:
+        icon: mdi-microphone
+        description: Wyoming speech-to-text (:10300)
+        server: local
+        container: whisper
+
+- Network:
+    - Router:
+        icon: openwrt.png
+        href: http://192.168.1.X
+        description: OpenWrt
+        siteMonitor: http://192.168.1.X
+        widget:
+          type: openwrt
+          url: http://192.168.1.X
+          username: homepage
+          password: REDACTED
+          interfaceName: wan

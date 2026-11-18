@@ -1,0 +1,12 @@
+[Unit]
+Description=Glances Web UI
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/legion/.local/bin/glances -w -p 61208 -B 0.0.0.0
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

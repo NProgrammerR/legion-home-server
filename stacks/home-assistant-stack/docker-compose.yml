@@ -1,0 +1,43 @@
+
+services:
+  # Home Assistant
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ~/homeassistant:/config
+      - /run/dbus:/run/dbus:ro
+    environment:
+      - TZ=Europe/Helsinki
+    network_mode: host
+    restart: unless-stopped
+    depends_on:
+      - matter-server
+
+  # Matter controller (IKEA DIRIGERA etc.), HA connects at ws://localhost:5580/ws
+  matter-server:
+    container_name: matter-server
+    image: ghcr.io/home-assistant-libs/python-matter-server:stable
+    command: --storage-path /data
+    security_opt:
+      - apparmor=unconfined
+    volumes:
+      - ~/matter-server:/data
+    network_mode: host
+    restart: unless-stopped
+
+  # 1. Speech-to-Text (Whisper)
+  whisper:
+    container_name: whisper
+    image: rhasspy/wyoming-whisper
+    command: --model small-int8 --language en
+    volumes:
+      - ~/whisper-data:/data
+    environment:
+      - TZ=Europe/Helsinki
+    ports:
+      - "10300:10300"
+    restart: unless-stopped

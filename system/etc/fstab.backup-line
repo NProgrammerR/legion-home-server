@@ -1,0 +1,1 @@
+UUID=UUID-REDACTED /mnt/backup ext4 defaults,nofail,noatime 0 2
