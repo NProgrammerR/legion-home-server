@@ -5,6 +5,33 @@ The config files in this repo are copies of the live ones, with secrets removed 
 
 Last updated: 2026-11-10.
 
+## Architecture at a glance
+
+A single always-on Debian laptop acts as a home server. Everything is declared in Docker Compose or systemd units, so the whole machine can be rebuilt from this repo plus a restic backup.
+
+```
+                 LAN clients (laptop, phone, TV)
+                              |
+   +--------------------------+---------------------------+
+   |  legion: Debian 12, wired, no cloud dependency       |
+   |                                                      |
+   |  Docker Compose stacks          Native / systemd     |
+   |  - Home Assistant + Matter      - Ollama (GPU)       |
+   |    + Whisper (voice)            - Glances monitor    |
+   |  - Immich (photos, Postgres)    - restic backup timer|
+   |  - Homepage dashboard           - health check +     |
+   |  - Syncthing                      phone alerts       |
+   +------------------+-----------------------------------+
+                      | nightly 03:00, restic (encrypted, deduplicated)
+                      v
+              second NVMe: /mnt/backup
+```
+
+- **Declarative:** four Compose stacks plus systemd user units; configs live in this repo.
+- **Backed up:** nightly encrypted restic snapshots to a separate disk, with retention, integrity checks and restore tests.
+- **Observable:** Glances, SMART monitoring, a post-reboot health report and phone alerts through Home Assistant when a job fails.
+- **Hardened by habit:** secrets kept out of git, automatic security updates, least-privilege sudo allow-list.
+
 ## Contents
 
 - [Hardware](#hardware)
