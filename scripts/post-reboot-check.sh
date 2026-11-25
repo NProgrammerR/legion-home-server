@@ -42,11 +42,9 @@ PROBLEMS=()
     a=$(systemctl --user is-active $s); echo "  $s (user): $a"; [ "$a" = active ] || PROBLEMS+=("$s $a")
   done
 
-  echo; echo "Failed system units (networking/ifup@eno1 are a known issue):"
+  echo; echo "Failed system units:"
   systemctl --failed --no-legend --plain | awk '{print "  "$1}'
-  for u in $(systemctl --failed --no-legend --plain | awk '{print $1}'); do
-    case $u in networking.service|ifup@eno1.service) ;; *) PROBLEMS+=("failed: $u");; esac
-  done
+  for u in $(systemctl --failed --no-legend --plain | awk '{print $1}'); do PROBLEMS+=("failed: $u"); done
   for u in $(systemctl --user --failed --no-legend --plain | awk '{print $1}'); do PROBLEMS+=("failed (user): $u"); done
 
   echo
