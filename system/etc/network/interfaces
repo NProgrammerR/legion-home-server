@@ -1,0 +1,11 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+#
+# eno1 is managed by NetworkManager (/etc/NetworkManager/system-connections/eno1.nmconnection).
+# Old config backed up in /etc/network/backup-20261125/.
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback

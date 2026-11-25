@@ -203,7 +203,7 @@ journalctl --user -u backup.service -n 20  # last backup
 - [x] Automatic security updates: `unattended-upgrades` enabled 2026-11-10 via [`system/etc/apt/apt.conf.d/20auto-upgrades`](system/etc/apt/apt.conf.d/20auto-upgrades) (default origins: Debian and Debian-Security only, so Docker's repo is never auto-upgraded; no automatic reboots). Log: `/var/log/unattended-upgrades/`.
 - [x] Removed the unsigned Espressif apt source (2026-11-10). Backup copy: `/etc/apt/espressif-eim.list.bak-20261110`. `~/.espressif` and the `eim` package are still installed.
 - [x] 2026-11-10: all apt updates installed, Docker 29.9.3 included, then rebooted into kernel 6.1.0-54. This was also the first reboot test of Conservation Mode: it stayed on. Post-reboot check: 0 problems.
-- [ ] `eno1` is set up both in `/etc/network/interfaces` (twice) and by NetworkManager; `networking.service` and `ifup@eno1` fail at boot.
+- [x] ~~`eno1` set up both by ifupdown and NetworkManager~~ Fixed 2026-11-25: `eno1` is managed only by NetworkManager (`system/etc/NetworkManager/system-connections/eno1.nmconnection`: DHCPv4, IPv6 auto, WoL magic); `/etc/network/interfaces` has only `lo`. Old config backed up in `/etc/network/backup-20261125/`. `scripts/network-rollback-check.sh` (one-shot user unit) rolls it back and reboots if `eno1` has no network within 4 min of boot.
 - [ ] RTC is in local time (Windows leftover): the clock is 1 h fast at boot until NTP fixes it, so container start times look wrong. Fix: `sudo timedatectl set-local-rtc 0`.
 - [ ] Docker container logs have no size limit (no `/etc/docker/daemon.json`).
 - [ ] Debian 12 is on LTS-only security support; plan the upgrade to Debian 13.

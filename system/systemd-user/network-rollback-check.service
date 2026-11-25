@@ -1,0 +1,9 @@
+[Unit]
+Description=One-shot network check with automatic rollback (2026-11-25 change)
+
+[Service]
+Type=oneshot
+ExecStart=%h/scripts/network-rollback-check.sh
+
+[Install]
+WantedBy=default.target
