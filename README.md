@@ -212,6 +212,10 @@ journalctl --user -u backup.service -n 20  # last backup
 - [x] 2026-11-10: all apt updates installed, Docker 29.9.3 included, then rebooted into kernel 6.1.0-54. This was also the first reboot test of Conservation Mode: it stayed on. Post-reboot check: 0 problems.
 - [x] ~~`eno1` set up both by ifupdown and NetworkManager~~ Fixed 2026-11-25: `eno1` is managed only by NetworkManager (`system/etc/NetworkManager/system-connections/eno1.nmconnection`: DHCPv4, IPv6 auto, WoL magic); `/etc/network/interfaces` has only `lo`. Old config backed up in `/etc/network/backup-20261125/`. `scripts/network-rollback-check.sh` (one-shot user unit) rolls it back and reboots if `eno1` has no network within 4 min of boot.
 - [x] RTC switched from local time (Windows leftover) to UTC on 2026-11-25 (`timedatectl set-local-rtc 0`). The clock no longer runs 1 h fast at boot.
+- [x] HA shut down uncleanly on reboot (Docker's 10 s stop timeout): `stop_grace_period: 60s` added 2026-11-25.
+- [x] HA Bluetooth: `hci0` was rfkill soft-blocked at boot (HA misreported it as missing capabilities). Fixed 2026-11-25 with [`80-bluetooth-unblock.rules`](system/etc/udev/rules.d/80-bluetooth-unblock.rules).
+- [x] Cleanup 2026-11-25: removed `~/.espressif` (unused ESP-IDF toolchain), pip/Homebrew caches and 18 autoremovable packages, ~13 GB.
+- [ ] **No update routine.** Containers and the Docker packages are only updated by hand (HA 2026.10.2 while 2026.11.3 is out; 6 Docker packages pending). `python-matter-server` is archived; migrate to `matterjs-server`.
 - [ ] Docker container logs have no size limit (no `/etc/docker/daemon.json`).
 - [ ] Debian 12 is on LTS-only security support; plan the upgrade to Debian 13.
 - [ ] No uptime alerts. Options: Uptime Kuma, or HA notifications. (Backup failures do alert, see [Backups](#backups).)

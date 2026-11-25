@@ -1,0 +1,3 @@
+# Added 2026-11-25: Bluetooth came up soft-blocked (rfkill) at boot, so HA could not use hci0.
+# systemd-rfkill is masked on this host, so nothing restores the state; force it unblocked.
+ACTION=="add", SUBSYSTEM=="rfkill", ATTR{type}=="bluetooth", ATTR{soft}="0"
