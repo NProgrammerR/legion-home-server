@@ -19,6 +19,19 @@ Anywhere                   ALLOW IN    172.16.0.0/12              # docker netwo
 3000/tcp                   ALLOW IN    192.168.1.X/24            # homepage
 10300/tcp                  ALLOW IN    192.168.1.X/24            # whisper
 Anywhere                   ALLOW IN    192.168.1.X/24/udp        # LAN udp (mDNS/SSDP/Matter/Thread/syncthing)
+22/tcp                     ALLOW IN    10.0.100.0/24              # VPN clients
+8123/tcp                   ALLOW IN    10.0.100.0/24              # VPN clients
+5580/tcp                   ALLOW IN    10.0.100.0/24              # VPN clients
+5540/tcp                   ALLOW IN    10.0.100.0/24              # VPN clients
+8384/tcp                   ALLOW IN    10.0.100.0/24              # VPN clients
+22000/tcp                  ALLOW IN    10.0.100.0/24              # VPN clients
+61208/tcp                  ALLOW IN    10.0.100.0/24              # VPN clients
+18555/tcp                  ALLOW IN    10.0.100.0/24              # VPN clients
+4070/tcp                   ALLOW IN    10.0.100.0/24              # VPN clients
+2283/tcp                   ALLOW IN    10.0.100.0/24              # VPN clients
+3000/tcp                   ALLOW IN    10.0.100.0/24              # VPN clients
+10300/tcp                  ALLOW IN    10.0.100.0/24              # VPN clients
+Anywhere                   ALLOW IN    10.0.100.0/24/udp          # VPN clients
 22/tcp                     ALLOW IN    fc00::/7                   # ssh
 8123/tcp                   ALLOW IN    fc00::/7                   # home-assistant
 5580/tcp                   ALLOW IN    fc00::/7                   # matter-server

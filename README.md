@@ -85,7 +85,7 @@ Home Assistant's built-in go2rtc also uses 127.0.0.1:18554 (RTSP) and :18555 (We
 All the ports above listen on every interface. Since 2026-11-25 `ufw` filters what the LAN can reach (current rules: [`system/ufw-status.txt`](system/ufw-status.txt)):
 
 - Default: deny incoming, allow outgoing. Blocked packets are logged (`journalctl -k | grep 'UFW BLOCK'`).
-- From the LAN only (192.168.1.X/24, IPv6 ULA `fc00::/7`, link-local `fe80::/10`): TCP 22, 8123, 5580, 5540, 8384, 22000, 61208, 18555, 4070, 2283, 3000, 10300, and all UDP. UDP is left open on the LAN because Matter, Thread, mDNS and SSDP use random ports.
+- From the LAN only (192.168.1.X/24, IPv6 ULA `fc00::/7`, link-local `fe80::/10`): TCP 22, 8123, 5580, 5540, 8384, 22000, 61208, 18555, 4070, 2283, 3000, 10300, and all UDP. UDP is left open on the LAN because Matter, Thread, mDNS and SSDP use random ports. The phone's VPN subnet `10.0.100.0/24` gets the same TCP ports and all UDP (without it the HA app shows "Connection lost" whenever the phone VPN is on).
 - Docker networks (172.16.0.0/12) may reach host services (Homepage widgets query HA and Glances).
 - Ollama (:11434) is not opened to the LAN.
 - Caveat: ports published by Docker (2283, 3000, 10300) bypass ufw, because Docker writes its own iptables rules. They are listed anyway, so the rules match the intent.
