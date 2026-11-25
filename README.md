@@ -121,6 +121,7 @@ The fstab line for the backup disk is in [`system/etc/fstab.backup-line`](system
 Backups use restic, run in a container (`restic/restic:0.18.1`), to the second NVMe.
 
 - **Schedule:** every night at 03:00 via the user timer [`backup.timer`](system/systemd-user/backup.timer). That's after Immich writes its own DB dump at 02:00.
+- **HA's own backup:** HA writes a consistent backup (config + database) to `~/homeassistant/backups/` daily at 02:30, keeping 3. restic picks it up at 03:00. Restore it in HA's onboarding screen ("Restore from backup") or under Settings → System → Backups.
 - **Script:** [`backup/run-backup.sh`](backup/run-backup.sh). It skips the run if `/mnt/backup` isn't mounted.
 - **Retention:** 7 daily, 4 weekly, 6 monthly snapshots. Every Sunday it runs `restic check --read-data-subset=5%`.
 - **Encryption:** the repository password is in `~/backup/restic-password` (not in this repo). **Keep a copy of it somewhere off the server.** Without it the backups can't be read.
@@ -217,13 +218,13 @@ journalctl --user -u backup.service -n 20  # last backup
 - [x] Cleanup 2026-11-25: removed `~/.espressif` (unused ESP-IDF toolchain), pip/Homebrew caches and 18 autoremovable packages, ~13 GB.
 - [x] Update routine: [`scripts/update-all.sh`](scripts/update-all.sh), run by hand monthly. `--check` (default) lists pending apt packages, image updates and HA/Immich/matterjs-server versions; `--apply` backs up with restic first, runs `apt full-upgrade` (Docker included), pulls and recreates every stack, health-checks and notifies the phone. Logs in `~/update-logs/`.
 - [x] Matter: migrated 2026-11-25 from the archived `python-matter-server` to [`matterjs-server`](https://github.com/matter-js/matterjs-server) 1.6.0 (pinned). Same data dir and WebSocket; the DIRIGERA kept its pairing.
-- [ ] First `update-all.sh --apply` run still to do (HA 2026.10.2 → 2026.11.3, Docker packages, several images).
-- [ ] Docker container logs have no size limit (no `/etc/docker/daemon.json`).
+- [x] First `update-all.sh --apply` run 2026-11-25: HA 2026.10.2 → 2026.11.3, Immich 3.3.6 → 3.4.2, Docker 29.9.3 → 29.10.1, Homepage/Syncthing/Whisper images. 0 problems.
+- [x] Docker log limits: [`system/etc/docker/daemon.json`](system/etc/docker/daemon.json) (json-file, 3 × 10 MB per container), 2026-11-25.
 - [ ] Debian 12 is on LTS-only security support; plan the upgrade to Debian 13.
 - [ ] No uptime alerts. Options: Uptime Kuma, or HA notifications. (Backup failures do alert, see [Backups](#backups).)
-- [ ] No low-battery shutdown during a power cut.
+- [x] Power cuts: [`scripts/power-watch.sh`](scripts/power-watch.sh) (user unit `power-watch`) notifies the phone when mains is lost/restored and powers off cleanly at ≤15% battery. The machine then stays off until the power button is pressed.
 - [x] Drive health: `smartmontools` installed 2026-11-10 (`smartd` running). Both NVMe drives PASSED, 1–2% wear, no media errors. Check: `sudo -n /usr/sbin/smartctl -H -A /dev/nvme0n1`. smartd's warnings only go to the journal, so nothing alerts on them yet.
-- [ ] HA's built-in backups are off. The restic copy of `home-assistant_v2.db` is taken while HA is running.
+- [x] HA's own backups: daily at 02:30 to `~/homeassistant/backups` (DB included, unencrypted, 3 copies), so the 03:00 restic run always has a consistent copy of the database. Since 2026-11-25.
 
 ## Repo layout
 

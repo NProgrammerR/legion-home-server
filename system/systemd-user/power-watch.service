@@ -1,0 +1,10 @@
+[Unit]
+Description=Power-cut watcher: phone alerts and clean shutdown at low battery
+
+[Service]
+ExecStart=%h/scripts/power-watch.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

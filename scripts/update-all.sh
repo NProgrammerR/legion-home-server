@@ -14,6 +14,7 @@ set -uo pipefail
 MODE=${1:---check}
 STACKS="home-assistant-stack immich homepage syncthing"
 EXPECTED="homeassistant matter-server whisper immich_server immich_machine_learning immich_postgres immich_redis homepage syncthing"
+MATTER_PROBE=light.kori_lamppu   # a Matter entity that should always be reachable
 T=$(cat /home/legion/.ha_token)
 LOGDIR=/home/legion/update-logs; mkdir -p "$LOGDIR"
 LOG="$LOGDIR/update-$(date +%F-%H%M).log"
@@ -42,7 +43,7 @@ check_images() {
 
 report_pending() {
   say "== Pending ($(date '+%F %T'))"
-  sudo -n /usr/bin/apt update -qq >/dev/null 2>&1
+  sudo -n /usr/bin/apt update >/dev/null 2>&1
   n=$(apt list --upgradable 2>/dev/null | grep -vc Listing)
   say "apt: $n upgradable"; apt list --upgradable 2>/dev/null | grep -v Listing | cut -d/ -f1 | sed 's/^/  /' | tee -a "$LOG"
   say "Home Assistant: running $(ha_version), latest release $(gh_latest home-assistant/core)"
@@ -65,8 +66,10 @@ health_check() {
     say "  $c: $st"
     case $st in running|running/healthy) ;; *) PROBLEMS+=("$c $st");; esac
   done
-  docker logs --since 10m matter-server 2>&1 | grep -q 'Subscription successful\|available after' \
-    && say "Matter: DIRIGERA subscribed" || { say "Matter: no subscription seen in 10 min"; PROBLEMS+=("matter subscription"); }
+  ms=$(curl -s -m 5 -H "Authorization: Bearer $T" http://localhost:8123/api/states/$MATTER_PROBE \
+       | python3 -c 'import sys,json;print(json.load(sys.stdin)["state"])' 2>/dev/null || echo "?")
+  case $ms in on|off) say "Matter: $MATTER_PROBE is $ms (reachable through matter-server)";;
+              *) say "Matter: $MATTER_PROBE is $ms"; PROBLEMS+=("matter: $MATTER_PROBE $ms");; esac
   for u in $(systemctl --failed --no-legend --plain | awk '{print $1}'); do PROBLEMS+=("failed: $u"); done
 }
 
@@ -84,16 +87,26 @@ BEFORE_HA=$(ha_version)
 # 1. Backup first. Refuse to continue without it.
 mountpoint -q /mnt/backup || { say "ABORT: /mnt/backup not mounted"; notify "legion update aborted" "/mnt/backup not mounted"; exit 1; }
 say "== restic backup"
+START=$(date '+%F %T')
 if ! systemctl --user start backup.service; then
   say "ABORT: backup failed"; notify "legion update aborted" "backup.service failed"; exit 1
 fi
-journalctl --user -u backup.service -n 20 --no-pager -o cat | grep -E 'snapshot .* saved' | tail -1 | tee -a "$LOG"
+journalctl --user -u backup.service --since "$START" --no-pager -o cat | grep -E 'snapshot .* saved' | tail -1 | tee -a "$LOG"
 
 # 2. OS packages, Docker included (upgrading docker-ce restarts every container).
-say "== apt full-upgrade"
-sudo -n /usr/bin/apt update -qq 2>&1 | tail -2 >>"$LOG"
-if ! sudo -n /usr/bin/apt full-upgrade -y -o Dpkg::Options::=--force-confold >>"$LOG" 2>&1; then
-  PROBLEMS+=("apt full-upgrade failed (see log)")
+# sudoers only allows exact apt forms plus "apt install *", so upgrade via install --only-upgrade
+# (that form accepts --force-confold, which keeps locally edited config files without prompting).
+say "== apt upgrade"
+sudo -n /usr/bin/apt update >>"$LOG" 2>&1 || PROBLEMS+=("apt update failed")
+PKGS=$(apt list --upgradable 2>/dev/null | grep -v Listing | cut -d/ -f1 | tr '\n' ' ')
+if [ -n "$PKGS" ]; then
+  say "upgrading: $PKGS"
+  if ! sudo -n /usr/bin/apt install --only-upgrade -y -o Dpkg::Options::=--force-confdef \
+         -o Dpkg::Options::=--force-confold $PKGS >>"$LOG" 2>&1; then
+    PROBLEMS+=("apt upgrade failed (see log)")
+  fi
+  left=$(apt list --upgradable 2>/dev/null | grep -vc Listing)
+  [ "$left" -gt 0 ] && say "still upgradable after run: $left (held back or needs new packages)"
 fi
 for i in $(seq 1 30); do docker info >/dev/null 2>&1 && break; sleep 5; done
 
