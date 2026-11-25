@@ -21,16 +21,24 @@ services:
       - matter-server
 
   # Matter controller (IKEA DIRIGERA etc.), HA connects at ws://localhost:5580/ws
+  # matterjs-server (successor of the archived python-matter-server) since 2026-11-25.
+  # It migrated the python data files in ~/matter-server on first start. Runs as uid 1000.
+  # Rollback: image ghcr.io/home-assistant-libs/python-matter-server:stable,
+  #   command --storage-path /data, security_opt apparmor=unconfined (it keeps <id>.json current).
   matter-server:
     container_name: matter-server
-    image: ghcr.io/home-assistant-libs/python-matter-server:stable
+    image: ghcr.io/matter-js/matterjs-server:1.6.0
     command: --storage-path /data
-    security_opt:
-      - apparmor=unconfined
+    environment:
+      - TZ=Europe/Helsinki
+      - PRIMARY_INTERFACE=eno1
+    cap_add:
+      - NET_RAW   # device ping (host has net.ipv4.ping_group_range = 1 0)
     volumes:
       - ~/matter-server:/data
     network_mode: host
     restart: unless-stopped
+    stop_grace_period: 30s
 
   # 1. Speech-to-Text (Whisper)
   whisper:

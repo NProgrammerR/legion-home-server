@@ -68,7 +68,7 @@ Everything except SSH, Ollama, Glances, Apache and raspotify runs in Docker Comp
 | Service | URL / port | How it runs | Purpose |
 |---|---|---|---|
 | Home Assistant | http://192.168.1.X:8123 | `home-assistant-stack`, host network | Home automation. Controls real devices |
-| Matter Server | :5580 (ws) | `home-assistant-stack`, host network | Matter controller for HA (IKEA DIRIGERA etc.) |
+| Matter Server | :5580 (ws + dashboard) | `home-assistant-stack`, host network | Matter controller for HA (IKEA DIRIGERA etc.). [matterjs-server](https://github.com/matter-js/matterjs-server) 1.6.0 since 2026-11-25 |
 | Whisper | :10300 | `home-assistant-stack` | Speech-to-text for HA voice (`small-int8`, English) |
 | Immich | http://192.168.1.X:2283 | `immich` (server, ML, Postgres, Valkey) | Photo library |
 | Homepage | http://192.168.1.X:3000 | `homepage` | Dashboard linking every service |
@@ -215,7 +215,9 @@ journalctl --user -u backup.service -n 20  # last backup
 - [x] HA shut down uncleanly on reboot (Docker's 10 s stop timeout): `stop_grace_period: 60s` added 2026-11-25.
 - [x] HA Bluetooth: `hci0` was rfkill soft-blocked at boot (HA misreported it as missing capabilities). Fixed 2026-11-25 with [`80-bluetooth-unblock.rules`](system/etc/udev/rules.d/80-bluetooth-unblock.rules).
 - [x] Cleanup 2026-11-25: removed `~/.espressif` (unused ESP-IDF toolchain), pip/Homebrew caches and 18 autoremovable packages, ~13 GB.
-- [ ] **No update routine.** Containers and the Docker packages are only updated by hand (HA 2026.10.2 while 2026.11.3 is out; 6 Docker packages pending). `python-matter-server` is archived; migrate to `matterjs-server`.
+- [x] Update routine: [`scripts/update-all.sh`](scripts/update-all.sh), run by hand monthly. `--check` (default) lists pending apt packages, image updates and HA/Immich/matterjs-server versions; `--apply` backs up with restic first, runs `apt full-upgrade` (Docker included), pulls and recreates every stack, health-checks and notifies the phone. Logs in `~/update-logs/`.
+- [x] Matter: migrated 2026-11-25 from the archived `python-matter-server` to [`matterjs-server`](https://github.com/matter-js/matterjs-server) 1.6.0 (pinned). Same data dir and WebSocket; the DIRIGERA kept its pairing.
+- [ ] First `update-all.sh --apply` run still to do (HA 2026.10.2 → 2026.11.3, Docker packages, several images).
 - [ ] Docker container logs have no size limit (no `/etc/docker/daemon.json`).
 - [ ] Debian 12 is on LTS-only security support; plan the upgrade to Debian 13.
 - [ ] No uptime alerts. Options: Uptime Kuma, or HA notifications. (Backup failures do alert, see [Backups](#backups).)
