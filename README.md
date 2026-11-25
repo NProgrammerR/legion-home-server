@@ -76,13 +76,19 @@ Everything except SSH, Ollama, Glances, Apache and raspotify runs in Docker Comp
 | Ollama | :11434 | system service `ollama` | Local LLM runtime on the GPU (no models installed since 2026-11-10) |
 | Glances | http://192.168.1.X:61208 | user service `glances-web` | System monitor |
 | Apache | (off) | system service, **stopped and disabled 2026-11-10** | Was only the Debian default page |
-| raspotify | random | system service | Spotify Connect speaker |
-| SSH | :22 | system service | Remote shell |
+| raspotify | :4070 (zeroconf) | system service | Spotify Connect speaker. Port pinned with `LIBRESPOT_ZEROCONF_PORT=4070` in `/etc/raspotify/conf` |
+| SSH | :22 | system service | Remote shell, keys only ([`10-keys-only.conf`](system/etc/ssh/sshd_config.d/10-keys-only.conf)) |
 | Claude Code | n/a | user service `claude-rc` | Remote-control admin session (claude.ai / mobile app) |
 
 Home Assistant's built-in go2rtc also uses 127.0.0.1:18554 (RTSP) and :18555 (WebRTC).
 
-All the ports above listen on every interface, so the whole LAN can reach them. There is no firewall yet (see [Known gaps](#known-gaps--to-do)).
+All the ports above listen on every interface. Since 2026-11-25 `ufw` filters what the LAN can reach (current rules: [`system/ufw-status.txt`](system/ufw-status.txt)):
+
+- Default: deny incoming, allow outgoing. Blocked packets are logged (`journalctl -k | grep 'UFW BLOCK'`).
+- From the LAN only (192.168.1.X/24, IPv6 ULA `fc00::/7`, link-local `fe80::/10`): TCP 22, 8123, 5580, 5540, 8384, 22000, 61208, 18555, 4070, 2283, 3000, 10300, and all UDP. UDP is left open on the LAN because Matter, Thread, mDNS and SSDP use random ports.
+- Docker networks (172.16.0.0/12) may reach host services (Homepage widgets query HA and Glances).
+- Ollama (:11434) is not opened to the LAN.
+- Caveat: ports published by Docker (2283, 3000, 10300) bypass ufw, because Docker writes its own iptables rules. They are listed anyway, so the rules match the intent.
 
 ### Data folders
 
@@ -189,22 +195,23 @@ journalctl --user -u backup.service -n 20  # last backup
 3. Mount the backup disk: add the line from `system/etc/fstab.backup-line` to `/etc/fstab`, then run `mkdir /mnt/backup && mount -a`.
 4. Restore the data folders from restic (see [Backups](#backups)). This brings back `~/homeassistant`, `~/matter-server`, `~/immich`, `~/syncthing`, `~/homepage`, the compose files and `~/backup`.
 5. Recreate the secrets that aren't backed up as plain files: `~/immich/.env` and `~/backup/restic-password` (both from the password manager). `~/homeassistant/secrets.yaml` is in the restic backup.
-6. Copy the files from `system/etc/` and `system/systemd-user/` into place, then run `systemctl --user enable --now backup.timer glances-web`.
-7. Install Ollama (`curl -fsSL https://ollama.com/install.sh | sh`), add `override.conf`, and pull any models you want (`ollama pull <model>`).
-8. Start each stack with `cd ~/<stack> && docker compose up -d`.
-9. Check: Homepage at :3000 should show every service as up.
+6. Put your SSH public key in `~legion/.ssh/authorized_keys` first (`10-keys-only.conf` turns password logins off). Copy the files from `system/etc/` and `system/systemd-user/` into place, then run `systemctl --user enable --now backup.timer glances-web`.
+7. Install `ufw` and recreate the rules listed in `system/ufw-status.txt` (see [Services](#services) for the commands' shape: `ufw allow proto tcp from 192.168.1.X/24 to any port <p>`), then `ufw enable`. Set `LIBRESPOT_ZEROCONF_PORT=4070` in `/etc/raspotify/conf`.
+8. Install Ollama (`curl -fsSL https://ollama.com/install.sh | sh`), add `override.conf`, and pull any models you want (`ollama pull <model>`).
+9. Start each stack with `cd ~/<stack> && docker compose up -d`.
+10. Check: Homepage at :3000 should show every service as up.
 
 ## Known gaps / to do
 
 - [ ] **No off-site backup.** Both copies are in the same laptop. Add a second restic repository (Backblaze B2, or the t470s).
-- [ ] **No firewall.** Every service is open to the LAN. Plan: `ufw`, allowing only the ports in use.
-- [ ] Ollama listens on `0.0.0.0` with no authentication. Restrict it to localhost unless LAN access is needed.
-- [ ] SSH still allows password logins (Debian default). Switch to keys only.
+- [x] Firewall: `ufw` enabled 2026-11-25, LAN-only, only the ports in use (see [Ports](#services)). Off switch: `sudo -n /usr/sbin/ufw disable`.
+- [ ] Ollama listens on `0.0.0.0` with no authentication. ufw now blocks it from the LAN; binding it to localhost would be cleaner.
+- [x] SSH is keys only since 2026-11-25 (`PasswordAuthentication no`, `KbdInteractiveAuthentication no`, `PermitRootLogin no`).
 - [x] Automatic security updates: `unattended-upgrades` enabled 2026-11-10 via [`system/etc/apt/apt.conf.d/20auto-upgrades`](system/etc/apt/apt.conf.d/20auto-upgrades) (default origins: Debian and Debian-Security only, so Docker's repo is never auto-upgraded; no automatic reboots). Log: `/var/log/unattended-upgrades/`.
 - [x] Removed the unsigned Espressif apt source (2026-11-10). Backup copy: `/etc/apt/espressif-eim.list.bak-20261110`. `~/.espressif` and the `eim` package are still installed.
 - [x] 2026-11-10: all apt updates installed, Docker 29.9.3 included, then rebooted into kernel 6.1.0-54. This was also the first reboot test of Conservation Mode: it stayed on. Post-reboot check: 0 problems.
 - [x] ~~`eno1` set up both by ifupdown and NetworkManager~~ Fixed 2026-11-25: `eno1` is managed only by NetworkManager (`system/etc/NetworkManager/system-connections/eno1.nmconnection`: DHCPv4, IPv6 auto, WoL magic); `/etc/network/interfaces` has only `lo`. Old config backed up in `/etc/network/backup-20261125/`. `scripts/network-rollback-check.sh` (one-shot user unit) rolls it back and reboots if `eno1` has no network within 4 min of boot.
-- [ ] RTC is in local time (Windows leftover): the clock is 1 h fast at boot until NTP fixes it, so container start times look wrong. Fix: `sudo timedatectl set-local-rtc 0`.
+- [x] RTC switched from local time (Windows leftover) to UTC on 2026-11-25 (`timedatectl set-local-rtc 0`). The clock no longer runs 1 h fast at boot.
 - [ ] Docker container logs have no size limit (no `/etc/docker/daemon.json`).
 - [ ] Debian 12 is on LTS-only security support; plan the upgrade to Debian 13.
 - [ ] No uptime alerts. Options: Uptime Kuma, or HA notifications. (Backup failures do alert, see [Backups](#backups).)

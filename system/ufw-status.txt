@@ -1,0 +1,48 @@
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), deny (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+Anywhere                   ALLOW IN    172.16.0.0/12              # docker networks -> host
+22/tcp                     ALLOW IN    192.168.1.X/24            # ssh
+8123/tcp                   ALLOW IN    192.168.1.X/24            # home-assistant
+5580/tcp                   ALLOW IN    192.168.1.X/24            # matter-server
+5540/tcp                   ALLOW IN    192.168.1.X/24            # matter
+8384/tcp                   ALLOW IN    192.168.1.X/24            # syncthing-gui
+22000/tcp                  ALLOW IN    192.168.1.X/24            # syncthing
+61208/tcp                  ALLOW IN    192.168.1.X/24            # glances
+18555/tcp                  ALLOW IN    192.168.1.X/24            # go2rtc-webrtc
+4070/tcp                   ALLOW IN    192.168.1.X/24            # spotify-connect
+2283/tcp                   ALLOW IN    192.168.1.X/24            # immich
+3000/tcp                   ALLOW IN    192.168.1.X/24            # homepage
+10300/tcp                  ALLOW IN    192.168.1.X/24            # whisper
+Anywhere                   ALLOW IN    192.168.1.X/24/udp        # LAN udp (mDNS/SSDP/Matter/Thread/syncthing)
+22/tcp                     ALLOW IN    fc00::/7                   # ssh
+8123/tcp                   ALLOW IN    fc00::/7                   # home-assistant
+5580/tcp                   ALLOW IN    fc00::/7                   # matter-server
+5540/tcp                   ALLOW IN    fc00::/7                   # matter
+8384/tcp                   ALLOW IN    fc00::/7                   # syncthing-gui
+22000/tcp                  ALLOW IN    fc00::/7                   # syncthing
+61208/tcp                  ALLOW IN    fc00::/7                   # glances
+18555/tcp                  ALLOW IN    fc00::/7                   # go2rtc-webrtc
+4070/tcp                   ALLOW IN    fc00::/7                   # spotify-connect
+2283/tcp                   ALLOW IN    fc00::/7                   # immich
+3000/tcp                   ALLOW IN    fc00::/7                   # homepage
+10300/tcp                  ALLOW IN    fc00::/7                   # whisper
+Anywhere (v6)              ALLOW IN    fc00::/7/udp               # LAN udp (mDNS/SSDP/Matter/Thread/syncthing)
+22/tcp                     ALLOW IN    fe80::/10                  # ssh
+8123/tcp                   ALLOW IN    fe80::/10                  # home-assistant
+5580/tcp                   ALLOW IN    fe80::/10                  # matter-server
+5540/tcp                   ALLOW IN    fe80::/10                  # matter
+8384/tcp                   ALLOW IN    fe80::/10                  # syncthing-gui
+22000/tcp                  ALLOW IN    fe80::/10                  # syncthing
+61208/tcp                  ALLOW IN    fe80::/10                  # glances
+18555/tcp                  ALLOW IN    fe80::/10                  # go2rtc-webrtc
+4070/tcp                   ALLOW IN    fe80::/10                  # spotify-connect
+2283/tcp                   ALLOW IN    fe80::/10                  # immich
+3000/tcp                   ALLOW IN    fe80::/10                  # homepage
+10300/tcp                  ALLOW IN    fe80::/10                  # whisper
+Anywhere (v6)              ALLOW IN    fe80::/10/udp              # LAN udp (mDNS/SSDP/Matter/Thread/syncthing)
+
