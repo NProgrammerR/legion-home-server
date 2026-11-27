@@ -1,0 +1,7 @@
+#!/bin/sh
+# Read-only GET against the local Home Assistant REST API, without printing the token.
+# Usage: ha-get states/light.kori_lamppu   (leading "/" or "api/" is optional)
+set -eu
+p=${1:?usage: ha-get <api path>}
+p=${p#/}; p=${p#api/}
+exec curl -sf -m 15 -H "Authorization: Bearer $(cat "$HOME/.ha_token")" "http://localhost:8123/api/$p"

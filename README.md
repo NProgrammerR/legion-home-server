@@ -234,6 +234,8 @@ homeassistant/     HA YAML config (configuration, automations, dashboard)
 system/etc/        tmpfiles (battery), Ollama override, fstab line
 system/systemd-user/  backup timer/service, glances-web, claude-rc
 backup/            run-backup.sh
+docs/server-notes.md  full admin notes and change history (CLAUDE.md points here)
+scripts/ha-get     read-only GET helper for the local HA REST API
 ```
 
 ## What is not in this repo
